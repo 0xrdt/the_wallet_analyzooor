@@ -1,0 +1,5 @@
+wheel
+streamlit
+streamlit-aggrid
+plotly
+statsmodels

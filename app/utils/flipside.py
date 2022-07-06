@@ -67,3 +67,4 @@ if __name__ == "__main__":
 
 	data = get_data(sql_query)
 	print(data)
+	print("1")

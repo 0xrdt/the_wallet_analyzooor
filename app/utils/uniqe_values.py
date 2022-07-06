@@ -103,10 +103,10 @@ for value in to_loop['ez_nft_sales']:
     df = pd.DataFrame(data['results'], columns=data['columnLabels'])
     st.write(df)
 
-for value in to_loop['eez_nft_transfers']:
+for value in to_loop['ez_nft_transfers']:
 
     # distinct_query = "select distinct(" , value , ") from ethereum.core." , key
-    statement_eez_nft_transfers = (f"select distinct({value}) from ethereum.core.eez_nft_transfers")
+    statement_eez_nft_transfers = (f"select distinct({value}) from ethereum.core.ez_nft_transfers")
     st.write(statement_eez_nft_transfers)
     sql_query = statement_eez_nft_transfers
     data = get_data(sql_query)

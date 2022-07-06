@@ -52,7 +52,7 @@ def get_data(sql_query: str):
 			data = get_query_results(token)
 			if data: break
 		except Exception as e:
-			print(e)
+			st.write(e)
 			time.sleep(10)
 			tries += 1
 
@@ -70,7 +70,7 @@ to_loop['ez_nft_mints'] = [
 "NFT_TO_ADDRESS",
 "NFT_FROM_ADDRESS",
 ]
-to_loop['eez_nft_transfers'] = [
+to_loop['ez_nft_transfers'] = [
 "ORIGIN_TO_ADDRESS",
 "ETH_FROM_ADDRESS",
 "ETH_TO_ADDRESS",

@@ -68,15 +68,14 @@ to_loop['ez_nft_mints'] = [
 "NFT_ADDRESS",
 "PROJECT_NAME",
 "NFT_TO_ADDRESS",
-"NFT_FROM_ADDRESS",
+"NFT_FROM_ADDRESS", "date_trunc('day',block_timestamp)"
 ]
 to_loop['ez_nft_transfers'] = [
-"ORIGIN_TO_ADDRESS",
-"ETH_FROM_ADDRESS",
-"ETH_TO_ADDRESS",
-"ORIGIN_FROM_ADDRESS",
-"ORIGIN_TO_ADDRESS",
-"IDENTIFIER"]
+"NFT_ADDRESS",
+"NFT_FROM_ADDRESS",
+"NFT_TO_ADDRESS",
+"PROJECT_NAME",
+"date_trunc('day',block_timestamp)"]
 to_loop['ez_nft_sales'] = [
 "PLATFORM_ADDRESS",
 "PLATFORM_NAME",
@@ -87,7 +86,7 @@ to_loop['ez_nft_sales'] = [
 "NFT_ADDRESS",
 "CURRENCY_ADDRESS",
 "CURRENCY_SYMBOL",
-"BUYER_ADDRESS"
+"BUYER_ADDRESS", "date_trunc('day',block_timestamp)"
 ]
 # print(to_loop)
 
@@ -122,4 +121,8 @@ for value in to_loop['ez_nft_mints']:
     data = get_data(sql_query)
     df = pd.DataFrame(data['results'], columns=data['columnLabels'])
     st.write(df)
+
+
+
+# def reverse():
 

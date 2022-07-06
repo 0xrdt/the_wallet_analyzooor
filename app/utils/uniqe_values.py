@@ -3,7 +3,8 @@
 import requests
 import json
 import time
-
+import streamlit as st
+import pandas as pd
 def get_data(sql_query: str):
 	
 	# load api key from json
@@ -91,35 +92,34 @@ to_loop['ez_nft_sales'] = [
 # print(to_loop)
 
 for value in to_loop['ez_nft_sales']:
-    """print seperate statements for each value and key"""
 
     # distinct_query = "select distinct(" , value , ") from ethereum.core." , key
     statement_ez_nft_sales = (f"select distinct({value}) from ethereum.core.ez_nft_sales")
     
-    print(statement_ez_nft_sales)
+    st.write(statement_ez_nft_sales)
     sql_query = statement_ez_nft_sales
     data = get_data(sql_query)
-    print(data)
+
+    df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+    st.write(df)
 
 for value in to_loop['eez_nft_transfers']:
-    """print seperate statements for each value and key"""
 
     # distinct_query = "select distinct(" , value , ") from ethereum.core." , key
     statement_eez_nft_transfers = (f"select distinct({value}) from ethereum.core.eez_nft_transfers")
-    print(statement_eez_nft_transfers)
+    st.write(statement_eez_nft_transfers)
     sql_query = statement_eez_nft_transfers
     data = get_data(sql_query)
-    print(data)
-
+    df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+    st.write(df)
 for value in to_loop['ez_nft_mints']:
-    """print seperate statements for each value and key"""
 
     # distinct_query = "select distinct(" , value , ") from ethereum.core." , key
     statement_ez_nft_mints = (f"select distinct({value}) from ethereum.core.ez_nft_mints")
-    print(statement_ez_nft_mints)
+    st.write(statement_ez_nft_mints)
     sql_query = statement_ez_nft_sales
 
     data = get_data(sql_query)
-    print(data)
-
+    df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+    st.write(df)
 

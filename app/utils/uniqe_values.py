@@ -5,6 +5,14 @@ import json
 import time
 import streamlit as st
 import pandas as pd
+st.set_page_config(
+     page_title="The Wallet Analyzoooooor",
+     page_icon="🔎",
+     layout="wide",
+     initial_sidebar_state="expanded",
+    #  menu_items={
+    #      'About': 'https://0xrdt.notion.site/Interactive-Arbitrum-Explorer-41441dc5176049559bf35eb6bb1ffef8'}
+ )
 def get_data(sql_query: str):
 	
 	# load api key from json
@@ -47,13 +55,13 @@ def get_data(sql_query: str):
 	token = query.get('token')
 
 	tries = 0
-	while tries <= 10:
+	while tries <= 100:
 		try:
 			data = get_query_results(token)
 			if data: break
 		except Exception as e:
 			st.write(e)
-			time.sleep(10)
+			time.sleep(60)
 			tries += 1
 
 	return data
@@ -68,8 +76,7 @@ to_loop['ez_nft_mints'] = [
 "NFT_ADDRESS",
 "PROJECT_NAME",
 "NFT_TO_ADDRESS",
-"NFT_FROM_ADDRESS", "date_trunc('day',block_timestamp)"
-]
+"NFT_FROM_ADDRESS", "date_trunc('day',block_timestamp)"]
 to_loop['ez_nft_transfers'] = [
 "NFT_ADDRESS",
 "NFT_FROM_ADDRESS",
@@ -86,8 +93,8 @@ to_loop['ez_nft_sales'] = [
 "NFT_ADDRESS",
 "CURRENCY_ADDRESS",
 "CURRENCY_SYMBOL",
-"BUYER_ADDRESS", "date_trunc('day',block_timestamp)"
-]
+"BUYER_ADDRESS", 
+"date_trunc('day',block_timestamp)"]
 # print(to_loop)
 
 for value in to_loop['ez_nft_sales']:
@@ -100,7 +107,15 @@ for value in to_loop['ez_nft_sales']:
     data = get_data(sql_query)
 
     df = pd.DataFrame(data['results'], columns=data['columnLabels'])
-    st.write(df)
+    st.write(df.head())
+    uniqe_val = st.selectbox("Select a unique value", df) 
+    query_reserve = (f"select * from ethereum.core.ez_nft_sales where {value} = ('{uniqe_val}')")
+    st.write(query_reserve)
+
+    # sql_query = query_reserve
+    # data = get_data(sql_query)
+    # df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+    # st.write(df)
 
 for value in to_loop['ez_nft_transfers']:
 
@@ -110,7 +125,16 @@ for value in to_loop['ez_nft_transfers']:
     sql_query = statement_eez_nft_transfers
     data = get_data(sql_query)
     df = pd.DataFrame(data['results'], columns=data['columnLabels'])
-    st.write(df)
+    st.write(df.head())
+    uniqe_val = st.selectbox("Select a unique value", df) 
+    query_reserve = (f"select * from ethereum.core.ez_nft_transfers where {value} = ('{uniqe_val}')")
+    st.write(query_reserve)
+
+    # sql_query = query_reserve
+    # st.write(query_reserve)
+    # data = get_data(sql_query)
+    # df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+    # st.write(df)
 for value in to_loop['ez_nft_mints']:
 
     # distinct_query = "select distinct(" , value , ") from ethereum.core." , key
@@ -120,9 +144,21 @@ for value in to_loop['ez_nft_mints']:
 
     data = get_data(sql_query)
     df = pd.DataFrame(data['results'], columns=data['columnLabels'])
-    st.write(df)
-
+    st.write(df.head())
+    uniqe_val = st.selectbox("Select a unique value", df) 
+    query_reserve = (f"select * from ethereum.core.ez_nft_mints where {value} = ('{uniqe_val})'")
+    st.write(query_reserve)
+    # sql_query = query_reserve
+    # data = get_data(sql_query)
+    # df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+    # st.write(df)
 
 
 # def reverse():
-
+    # uniqe_val = st.selectbox("Select a unique value", df.columns) 
+    # query_reserve = (f"select * from ez_nft_sales where {value} = {uniqe_val}")
+    # sql_query = query_reserve
+    # data = get_data(sql_query)
+    # df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+    # st.write(df)
+# new_name =

@@ -15,7 +15,7 @@ def load_transactions(wallet_address: str, start_date: str, rows_limit: int = 10
 
 	if data:
 		transactions_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
-		transactions_per_wallet = transactions_per_wallet.drop_duplicates()
+		transactions_per_wallet = transactions_per_wallet.drop_duplicates('TX_HASH')
 
 		transactions_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(transactions_per_wallet['BLOCK_TIMESTAMP'])
 		cols = ['ADDRESS_NAME','LABEL_TYPE','LABEL_SUBTYPE','LABEL']
@@ -72,7 +72,7 @@ def load_native_token_transfers(wallet_address: str, start_date: str, rows_limit
 
 	if data:
 		native_token_transfers_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
-		native_token_transfers_per_wallet = native_token_transfers_per_wallet.drop_duplicates()
+		native_token_transfers_per_wallet = native_token_transfers_per_wallet.drop_duplicates(subset='TX_HASH')
 
 		native_token_transfers_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(native_token_transfers_per_wallet['BLOCK_TIMESTAMP'])
 		cols = ['ADDRESS_NAME','LABEL_TYPE','LABEL_SUBTYPE','LABEL']
@@ -101,7 +101,7 @@ def load_erc20_token_transfers(wallet_address: str, start_date: str, rows_limit:
 
 	if data:
 		erc20_token_transfers_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
-		erc20_token_transfers_per_wallet = erc20_token_transfers_per_wallet.drop_duplicates()
+		erc20_token_transfers_per_wallet = erc20_token_transfers_per_wallet.drop_duplicates(subset='TX_HASH')
 
 		erc20_token_transfers_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(erc20_token_transfers_per_wallet['BLOCK_TIMESTAMP'])
 		cols = ['ADDRESS_NAME','LABEL_TYPE','LABEL_SUBTYPE','LABEL']

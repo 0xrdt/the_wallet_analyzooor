@@ -29,12 +29,20 @@ def get_data(sql_query: str):
 			'https://node-api.flipsidecrypto.com/queries/' + token, 
 			headers={"Accept": "application/json", "Content-Type": "application/json", "x-api-key": API_KEY}
 		)
+		if r.status_code == 400:
+			return {}
+
+		if r.status_code == 504:
+			print("504 error, retrying...")
+			time.sleep(5)
+			return get_query_results(token)
+
 		if r.status_code != 200:
 			raise Exception("Error getting query results, got response: " + r.text + "with status code: " + str(r.status_code))
 		
 		data = json.loads(r.text)
 		if data['status'] == 'running':
-			time.sleep(10)
+			time.sleep(5)
 			return get_query_results(token)
 
 		return data
@@ -47,7 +55,7 @@ def get_data(sql_query: str):
 	while tries <= 10:
 		try:
 			data = get_query_results(token)
-			if data: break
+			return data
 		except Exception as e:
 			print(e)
 			time.sleep(10)
@@ -56,15 +64,16 @@ def get_data(sql_query: str):
 	return data
 
 if __name__ == "__main__":
-	sql_query = """
-		SELECT 
-			nft_address, 
-			mint_price_eth, 
-			mint_price_usd 
-		FROM flipside_prod_db.ethereum_core.ez_nft_mints 
-		LIMIT 2
-	"""
+	import queries
+	import flipside
+	wallet_address='0xcf7a68127285c7c6c8546ce51b89d7e820f6d294'
+	rows_limit=1
+	chain_name = 'ethereum'
+	query_template = queries.wallet_label
+	query = query_template.\
+		replace("$CHAIN_NAME", chain_name).\
+		replace("$WALLET_ADDRESS", wallet_address.lower())
+	data = flipside.get_data(query + f" LIMIT {rows_limit}")
 
-	data = get_data(sql_query)
-	print(data)
-	print("1")
+	wallet_label = pd.DataFrame(data['results'], columns=data['columnLabels'])
+	get_data(query)

@@ -15,6 +15,7 @@ def load_transactions(wallet_address: str, start_date: str, rows_limit: int = 10
 
 	if data:
 		transactions_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
+		transactions_per_wallet = transactions_per_wallet.drop_duplicates()
 
 		transactions_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(transactions_per_wallet['BLOCK_TIMESTAMP'])
 		cols = ['ADDRESS_NAME','LABEL_TYPE','LABEL_SUBTYPE','LABEL']
@@ -44,6 +45,7 @@ def load_erc20_balances(wallet_address: str, start_date: str, rows_limit: int = 
 
 	if data:
 		erc20_balances_per_address = pd.DataFrame(data['results'], columns=data['columnLabels'])
+		erc20_balances_per_address = erc20_balances_per_address.drop_duplicates()
 
 		erc20_balances_per_address = erc20_balances_per_address.dropna(subset=["AMOUNT_USD"])
 		erc20_balances_per_address['BALANCE_DATE'] = pd.to_datetime(erc20_balances_per_address['BALANCE_DATE'])
@@ -70,6 +72,7 @@ def load_native_token_transfers(wallet_address: str, start_date: str, rows_limit
 
 	if data:
 		native_token_transfers_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
+		native_token_transfers_per_wallet = native_token_transfers_per_wallet.drop_duplicates()
 
 		native_token_transfers_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(native_token_transfers_per_wallet['BLOCK_TIMESTAMP'])
 		cols = ['ADDRESS_NAME','LABEL_TYPE','LABEL_SUBTYPE','LABEL']
@@ -98,6 +101,7 @@ def load_erc20_token_transfers(wallet_address: str, start_date: str, rows_limit:
 
 	if data:
 		erc20_token_transfers_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
+		erc20_token_transfers_per_wallet = erc20_token_transfers_per_wallet.drop_duplicates()
 
 		erc20_token_transfers_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(erc20_token_transfers_per_wallet['BLOCK_TIMESTAMP'])
 		cols = ['ADDRESS_NAME','LABEL_TYPE','LABEL_SUBTYPE','LABEL']
@@ -128,6 +132,8 @@ def load_wallet_label(wallet_address: str, rows_limit: int = 100_000):
 	if data:
 
 		wallet_label = pd.DataFrame(data['results'], columns=data['columnLabels'])
+		wallet_label = wallet_label.drop_duplicates()
+		
 		return wallet_label
 	else:
 		return pd.DataFrame(columns=['BLOCKCHAIN', 'CREATOR', 'ADDRESS', 'ADDRESS_NAME', 'LABEL_TYPE',

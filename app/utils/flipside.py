@@ -34,7 +34,7 @@ def get_data(sql_query: str):
 
 		if r.status_code == 504:
 			print("504 error, retrying...")
-			time.sleep(5)
+			time.sleep(10)
 			return get_query_results(token)
 
 		if r.status_code != 200:
@@ -42,7 +42,7 @@ def get_data(sql_query: str):
 		
 		data = json.loads(r.text)
 		if data['status'] == 'running':
-			time.sleep(5)
+			time.sleep(10)
 			return get_query_results(token)
 
 		return data

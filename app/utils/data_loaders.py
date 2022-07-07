@@ -124,8 +124,8 @@ def load_wallet_label(wallet_address: str, rows_limit: int = 100_000):
 		replace("$CHAIN_NAME", chain_name).\
 		replace("$WALLET_ADDRESS", wallet_address.lower())
 	
+	data = flipside.get_data(query + f" LIMIT {rows_limit}")
 	if data:
-		data = flipside.get_data(query + f" LIMIT {rows_limit}")
 
 		wallet_label = pd.DataFrame(data['results'], columns=data['columnLabels'])
 		return wallet_label

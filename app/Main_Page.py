@@ -47,7 +47,7 @@ if 'Transactions' in selected_sections:
 	st.markdown("## Transactions")
 	
 	transactions_per_wallet = load_transactions(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
-	if not transactions_per_wallet:
+	if len(transactions_per_wallet)==0:
 		st.markdown("No transactions found.")
 	else:
 		transactions_per_wallet['dummy']=10
@@ -103,7 +103,7 @@ if 'Historical Balance' in selected_sections:
 
 	erc20_balances_per_wallet = load_erc20_balances(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 
-	if not erc20_balances_per_wallet:
+	if len(erc20_balances_per_wallet)==0:
 		st.markdown("No ERC20 balances found.")
 	
 	else:
@@ -141,7 +141,7 @@ if 'Transfers' in selected_sections:
 	native_token_transfers_per_wallet = load_native_token_transfers(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 	token_transfers_per_wallet = load_erc20_token_transfers(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 
-	if not native_token_transfers_per_wallet and not token_transfers_per_wallet:
+	if (len(native_token_transfers_per_wallet)==0) or (len(token_transfers_per_wallet)==0):
 		st.markdown("No transfers found. (right now the account needs to have both ERC20 and ETH transfers, I'll fix it later")
 	else:
 		agg_native_token_transfers_per_wallet = native_token_transfers_per_wallet.groupby(["LABEL", "SIDE"])[['AMOUNT_USD', 'AMOUNT']].sum()

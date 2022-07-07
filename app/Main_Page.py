@@ -40,7 +40,7 @@ rows_limit = st.number_input(label='Rows limit (useful if the app is crashing, b
 st.markdown("Wallet label:")
 wallet_label = load_wallet_label(wallet_address).copy()
 wallet_label = wallet_label[['ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE', 'LABEL']]
-st.write(wallet_label.iloc[0])
+st.write(wallet_label.iloc[0].T)
 
 if 'Transactions' in selected_sections:
 

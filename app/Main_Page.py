@@ -249,8 +249,8 @@ if 'NFTs!' in selected_sections:
 
 	st.markdown("## NFTs!")
 
-	nft_sales_df = load_nft_sales(wallet_address.lower(), start_date, rows_limit=rows_limit)
-	nft_transfers_df = load_nft_transfers(wallet_address.lower(), start_date, rows_limit=rows_limit)
+	nft_sales_df = load_nft_sales(wallet_address.lower(), start_date, rows_limit=rows_limit).copy()
+	nft_transfers_df = load_nft_transfers(wallet_address.lower(), start_date, rows_limit=rows_limit).copy()
 
 	should_show_nft_scatter_plot = st.checkbox('Show nfts scatter plots')
 	if should_show_nft_scatter_plot:

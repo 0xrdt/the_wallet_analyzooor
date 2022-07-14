@@ -239,5 +239,5 @@ if 'Transactions on Other EVM Chains' in selected_sections:
 			'ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE',
 			'LABEL'
 			]
-			df = transactions_per_wallet[cols].sort_values(by='BLOCK_TIMESTAMP')
+			df = transactions_per_wallet_other_chains[cols].sort_values(by='BLOCK_TIMESTAMP')
 			df_grid_builder(df)

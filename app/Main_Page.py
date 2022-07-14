@@ -39,6 +39,13 @@ wallet_address = st.text_input(label='Wallet address', value='0x41318419cfa25396
 rows_limit = st.number_input(label='Rows limit (useful if the app is crashing, but will break some charts)', 
 								value=100_000, min_value=1, max_value=100_000)
 
+st.markdown("""
+Some wallet ideas:
+- 0x41318419cfa25396b47a94896ffa2c77c6434040: celsius (good for transfers and transactions)
+- 0x1c46450211cb2646cc1da3c5242422967ed9e04c: wonderland (good for crosschain)
+- 0x581BEf12967f06f2eBfcabb7504fA61f0326CD9A: danner.eth (good for nfts)
+""")
+
 st.markdown("Wallet label:")
 wallet_label = load_wallet_label(wallet_address).copy()
 
@@ -286,7 +293,7 @@ if 'NFTs!' in selected_sections:
 						title='NFT transfers and mints by project', hover_data=['TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'])
 			fig.update_layout(height=500)
 			st.write(fig)
-			
+
 			fig = px.scatter(nft_transfers_df, x='BLOCK_TIMESTAMP', y='PROJECT_NAME', color='EVENT_TYPE', facet_row='SIDE',size='dummy', size_max=10, opacity=0.5,
 						title='NFT transfers and mints by project (detailed by event type)', hover_data=['TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'])
 			fig.update_layout(height=500)		

@@ -259,15 +259,18 @@ if 'NFTs!' in selected_sections:
 
 			fig = px.scatter(nft_sales_df, x='BLOCK_TIMESTAMP', y='PROJECT_NAME', color='SIDE', size='dummy', size_max=10, opacity=0.5,
 						title='NFT sales/buys by project', hover_data=['PLATFORM_NAME', 'PRICE_USD', 'PRICE', 'TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'])
+			fig.update_layout(height=500)
 			st.write(fig)
 
 			fig = px.scatter(nft_sales_df, x='BLOCK_TIMESTAMP', y='PRICE_USD', facet_row='SIDE', color='PROJECT_NAME',size='dummy', size_max=10, opacity=0.5,
 									title='NFT sales/buys by USD Price', hover_data=['PLATFORM_NAME', 'PRICE_USD', 'PRICE', 'TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'], marginal_y='box')
+			fig.update_layout(height=500)
 			st.write(fig)
 
 			nft_sales_df_agg = nft_sales_df.groupby(['PROJECT_NAME', 'SIDE']).sum()['PRICE_USD'].reset_index()
 			nft_sales_df_agg.columns = ['PROJECT_NAME', 'SIDE', 'VOLUME_USD']
 			fig = px.sunburst(nft_sales_df_agg, path=['SIDE', 'PROJECT_NAME'], values='VOLUME_USD', title='Aggregate NFT sales volume', color='PROJECT_NAME')
+			fig.update_layout(height=700)
 			st.write(fig)
 
 			nft_sales_df_by_platform = nft_sales_df.groupby(['PLATFORM_NAME']).agg({"PRICE_USD": "sum", "PRICE": "sum", "TX_HASH": "count"}).reset_index()
@@ -281,11 +284,12 @@ if 'NFTs!' in selected_sections:
 			nft_transfers_df['dummy'] = 10
 			fig = px.scatter(nft_transfers_df, x='BLOCK_TIMESTAMP', y='PROJECT_NAME', color='SIDE', size='dummy', size_max=10, opacity=0.5,
 						title='NFT transfers and mints by project', hover_data=['TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'])
-					
+			fig.update_layout(height=500)
 			st.write(fig)
+			
 			fig = px.scatter(nft_transfers_df, x='BLOCK_TIMESTAMP', y='PROJECT_NAME', color='EVENT_TYPE', facet_row='SIDE',size='dummy', size_max=10, opacity=0.5,
 						title='NFT transfers and mints by project (detailed by event type)', hover_data=['TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'])
-					
+			fig.update_layout(height=500)		
 			st.write(fig)
 		else:
 			st.warning("No NFT transfers found")
@@ -295,6 +299,7 @@ if 'NFTs!' in selected_sections:
 			agg_agg_nfts = agg_nfts_df.groupby(['SIDE', 'PROJECT_NAME']).count().reset_index()
 			agg_agg_nfts.columns = ['SIDE', 'PROJECT_NAME', 'COUNT']
 			fig = px.sunburst(agg_agg_nfts, path=['SIDE', 'PROJECT_NAME'], values='COUNT', title='Aggregate count of NFT movements (sales, mints, transfers)', color='PROJECT_NAME')
+			fig.update_layout(height=700)
 			st.write(fig)
 
 	should_show_raw_nft_data = st.checkbox('Show nfts raw data')

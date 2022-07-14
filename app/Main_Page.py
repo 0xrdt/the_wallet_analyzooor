@@ -21,7 +21,7 @@ st.set_page_config(
 
 st.title('The Wallet Analyzoooooor')
 
-st.markdown("Fetching the data may take some time. Please be patient. (it usually takes less than 1 minute)")
+st.info("Fetching the data may take some time. Please be patient. (it usually takes less than 1 minute)")
 
 #st.sidebar.title('Choose what you want to see')
 selected_sections = st.multiselect('Choose the sections you want to see:', 
@@ -32,7 +32,7 @@ selected_sections = st.multiselect('Choose the sections you want to see:',
 												'Transactions on Other EVM Chains',
 												'NFTs!'
 											], 
-										   default=['Historical Balance'])
+										   default=[])
 
 start_date = st.date_input(label='Start date', value=datetime.date(2022, 6, 1)).strftime('%Y-%m-%d')
 wallet_address = st.text_input(label='Wallet address', value='0x41318419cfa25396b47a94896ffa2c77c6434040')

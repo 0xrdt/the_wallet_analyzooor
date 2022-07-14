@@ -137,3 +137,41 @@ def load_wallet_label(wallet_address: str, rows_limit: int = 100_000):
 	else:
 		return pd.DataFrame(columns=['BLOCKCHAIN', 'CREATOR', 'ADDRESS', 'ADDRESS_NAME', 'LABEL_TYPE',
        'LABEL_SUBTYPE', 'LABEL'])
+
+@st.cache
+def load_nft_sales(wallet_address: str, start_date: str, rows_limit: int = 100_000):
+	sales_template = queries.nft_sales_template
+	sales_query = sales_template.\
+		replace("$START_DATE", start_date).\
+		replace("$WALLET_ADDRESS", wallet_address.lower()) 
+	data = flipside.get_data_safe(sales_query)
+
+	if data:
+
+		sales_df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+		sales_df['BLOCK_TIMESTAMP'] = pd.to_datetime(sales_df['BLOCK_TIMESTAMP'])
+		sales_df['PROJECT_NAME'] = sales_df['PROJECT_NAME'].fillna('other')
+		return sales_df
+
+	else:
+		return pd.DataFrame(columns=['BLOCK_TIMESTAMP', 'TX_HASH', 'EVENT_TYPE', 'NFT_ADDRESS',
+					'PROJECT_NAME', 'SELLER_ADDRESS', 'BUYER_ADDRESS', 'TOKENID',
+					'PLATFORM_NAME', 'PRICE_USD', 'PRICE', 'SIDE'])
+
+@st.cache
+def load_nft_transfers(wallet_address: str, start_date: str, rows_limit: int = 100_000):
+	transfers_template = queries.nft_transfers_template
+	transfers_query = transfers_template.\
+		replace("$START_DATE", start_date).\
+		replace("$WALLET_ADDRESS", wallet_address.lower()) 
+	data = flipside.get_data_safe(transfers_query)
+	if data:
+		transfers_df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+		transfers_df['BLOCK_TIMESTAMP'] = pd.to_datetime(transfers_df['BLOCK_TIMESTAMP'])
+		transfers_df['PROJECT_NAME'] = transfers_df['PROJECT_NAME'].fillna('other')
+		return transfers_df
+
+	else:
+		return pd.DataFrame(columns=['BLOCK_TIMESTAMP', 'TX_HASH', 'EVENT_TYPE', 'NFT_ADDRESS',
+       								'PROJECT_NAME', 'NFT_FROM_ADDRESS', 'NFT_TO_ADDRESS', 
+									'TOKENID', 'SIDE'])

@@ -211,7 +211,7 @@ if 'Transactions on Other EVM Chains' in selected_sections:
 	other_chains = ['arbitrum', 'optimism', 'avalanche', 'bsc', 'polygon']
 	for chain in other_chains:
 		print(chain)
-		tmp_df = load_transactions(wallet_address.lower(), start_date, chain_name=chain)
+		tmp_df = load_transactions(wallet_address.lower(), start_date, chain_name=chain).copy()
 		tmp_df['chain'] = chain
 		list_of_dfs.append(tmp_df)
 

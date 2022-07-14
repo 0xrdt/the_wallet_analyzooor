@@ -206,6 +206,8 @@ if 'Transactions on Other EVM Chains' in selected_sections:
 	
 	st.markdown('## Transactions on Other EVM Chains')
 
+	st.warning("Cross chain data is not available before June 2022")
+
 	list_of_dfs = []
 
 	other_chains = ['arbitrum', 'optimism', 'avalanche', 'bsc', 'polygon']

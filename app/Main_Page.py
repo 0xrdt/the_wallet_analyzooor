@@ -39,8 +39,13 @@ rows_limit = st.number_input(label='Rows limit (useful if the app is crashing, b
 
 st.markdown("Wallet label:")
 wallet_label = load_wallet_label(wallet_address).copy()
-wallet_label = wallet_label[['ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE', 'LABEL']]
-st.write(wallet_label)
+
+if len(wallet_label) == 0:
+	st.write("No label found")
+
+else:
+	wallet_label = wallet_label[['ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE', 'LABEL']]
+	st.write(wallet_label)
 
 if 'Transactions' in selected_sections:
 
@@ -48,7 +53,7 @@ if 'Transactions' in selected_sections:
 	
 	transactions_per_wallet = load_transactions(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 	if len(transactions_per_wallet)==0:
-		st.markdown("No transactions found.")
+		st.warning("No transactions found.")
 	else:
 		transactions_per_wallet['dummy']=10
 		fig = px.scatter(transactions_per_wallet, x="BLOCK_TIMESTAMP", y="LABEL", color="SIDE", size='dummy', size_max=10, opacity=0.5,
@@ -104,7 +109,7 @@ if 'Historical Balance' in selected_sections:
 	erc20_balances_per_wallet = load_erc20_balances(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 
 	if len(erc20_balances_per_wallet)==0:
-		st.markdown("No ERC20 balances found.")
+		st.warning("No ERC20 balances found.")
 	
 	else:
 		fig = px.bar(erc20_balances_per_wallet, x='BALANCE_DATE', y='AMOUNT_USD', color='SYMBOL')
@@ -142,7 +147,7 @@ if 'Transfers' in selected_sections:
 	token_transfers_per_wallet = load_erc20_token_transfers(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 
 	if (len(native_token_transfers_per_wallet)==0) or (len(token_transfers_per_wallet)==0):
-		st.markdown("No transfers found. (right now the account needs to have both ERC20 and ETH transfers, I'll fix it later")
+		st.warning("No transfers found. (right now the account needs to have both ERC20 and ETH transfers, I'll fix it later")
 	else:
 		agg_native_token_transfers_per_wallet = native_token_transfers_per_wallet.groupby(["LABEL", "SIDE"])[['AMOUNT_USD', 'AMOUNT']].sum()
 		agg_native_token_transfers_per_wallet = agg_native_token_transfers_per_wallet.reset_index()
@@ -196,3 +201,42 @@ if 'Transfers' in selected_sections:
 			df_grid_builder(df)
 
 
+if 'Cross Chain' in selected_sections:
+	
+	st.markdown("## Cross Chain")
+
+	list_of_dfs = []
+
+	other_chains = ['arbitrum', 'optimism', 'avalanche', 'bsc', 'polygon']
+	for chain in other_chains:
+		print(chain)
+		tmp_df = load_transactions(wallet_address.lower(), start_date, chain_name=chain)
+		tmp_df['chain'] = chain
+		list_of_dfs.append(tmp_df)
+
+	transactions_per_wallet_other_chains = pd.concat(list_of_dfs)
+
+	if len(transactions_per_wallet_other_chains)==0:
+		st.warning("No cross chain transfers found.")
+	else:
+		found_chains = list(transactions_per_wallet_other_chains['chain'].unique())
+		st.write(f"Chains found: {found_chains}")
+
+		should_show_cross_chain_scatter_plot = st.checkbox("Show cross chain scatter plot")
+		if should_show_cross_chain_scatter_plot:
+			transactions_per_wallet_other_chains['dummy'] = 10
+			fig = px.scatter(transactions_per_wallet_other_chains, x="BLOCK_TIMESTAMP", y="LABEL", color="SIDE", size='dummy', size_max=10, opacity=0.5,
+					title='Labeled Transactions over time', hover_data=['TX_FEE', 'TX_HASH', 'ETH_VALUE'], facet_row='chain')
+			# fig.update_layout(xaxis_rangeslider_visible=True)
+			fig.update_layout(height=500*transactions_per_wallet_other_chains['chain'].nunique())
+			st.write(fig)
+		
+		should_show_cross_chain_raw_data = st.checkbox("Show cross chain raw data")
+		if should_show_cross_chain_raw_data:
+			cols = [
+			'chain', 'TX_HASH', 'SIDE', 'BLOCK_TIMESTAMP', 'FROM_ADDRESS', 'TO_ADDRESS', 'ETH_VALUE', 'TX_FEE', 
+			'ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE',
+			'LABEL'
+			]
+			df = transactions_per_wallet[cols].sort_values(by='BLOCK_TIMESTAMP')
+			df_grid_builder(df)

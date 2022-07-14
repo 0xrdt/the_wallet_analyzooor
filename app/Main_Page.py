@@ -272,7 +272,7 @@ if 'NFTs!' in selected_sections:
 
 			nft_sales_df_by_platform = nft_sales_df.groupby(['PLATFORM_NAME']).agg({"PRICE_USD": "sum", "PRICE": "sum", "TX_HASH": "count"}).reset_index()
 			nft_sales_df_by_platform.columns = ['PLATFORM_NAME', 'VOLUME_USD', 'VOLUME', 'COUNT']
-			fig = px.bar(nft_sales_df_by_platform, x='PLATFORM_NAME', y='COUNT', title='Most used NFT platforms', hover_data=['COUNT', 'PRICE_USD', 'PRICE'])
+			fig = px.bar(nft_sales_df_by_platform, x='PLATFORM_NAME', y='COUNT', title='Most used NFT platforms', hover_data=['COUNT', 'VOLUME_USD', 'VOLUME'])
 			st.write(fig)
 		else:
 			st.warning("No NFT sales found")

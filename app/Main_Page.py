@@ -28,7 +28,8 @@ selected_sections = st.multiselect('Choose the sections you want to see:',
 										   [
 												'Transactions',
 												'Historical Balance',
-												'Transfers'
+												'Transfers',
+												'Transactions on Other EVM Chains'
 											], 
 										   default=['Historical Balance'])
 
@@ -201,9 +202,9 @@ if 'Transfers' in selected_sections:
 			df_grid_builder(df)
 
 
-if 'Cross Chain' in selected_sections:
+if 'Transactions on Other EVM Chains' in selected_sections:
 	
-	st.markdown("## Cross Chain")
+	st.markdown('## Transactions on Other EVM Chains')
 
 	list_of_dfs = []
 

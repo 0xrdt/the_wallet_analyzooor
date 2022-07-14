@@ -42,7 +42,7 @@ rows_limit = st.number_input(label='Rows limit (useful if the app is crashing, b
 st.markdown("""
 Some wallet ideas:
 - 0x41318419cfa25396b47a94896ffa2c77c6434040: celsius (good for transfers and transactions)
-- 0x1c46450211cb2646cc1da3c5242422967ed9e04c: wonderland (good for crosschain)
+- 0x5DD596C901987A2b28C38A9C1DfBf86fFFc15d77: sifu (good for crosschain)
 - 0x581BEf12967f06f2eBfcabb7504fA61f0326CD9A: danner.eth (good for nfts)
 """)
 

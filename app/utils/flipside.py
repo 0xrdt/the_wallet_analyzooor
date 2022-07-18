@@ -1,15 +1,21 @@
 import requests
 import json
 import time
+import os
 
-try:
-	# load api key from json
-	with open('flipside_api_key.json') as f:
-		API_KEY = json.load(f)['api_key']
-except Exception as e:
-	print(e)
-	print("Error loading api key, please create a file named flipside_api_key.json with" \
-		  "your api key in it or set flipside.API_KEY to your key")
+# get env variable API_KEY
+API_KEY = os.environ.get('FLIPSIDE_API_KEY', None)
+
+if not API_KEY:
+	try:
+		# load api key from json
+		with open('flipside_api_key.json') as f:
+			API_KEY = json.load(f)['api_key']
+	except Exception as e:
+		print(e)
+		print("Error loading api key, please export the FLIPSIDE_API_KEY environment variable,"
+			  "create a file named flipside_api_key.json with" 
+			  "your api key in it or set flipside.API_KEY to your key")
 
 
 def get_data(sql_query: str):

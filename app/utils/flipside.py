@@ -82,7 +82,7 @@ def get_data_safe(sql_query: str):
 
 	data = get_data(safety_check_query)
 
-	if data['results'][0][0] == 0:
+	if data.get("results") and data['results'][0][0] == 0:
 		print("No rows found, returning empty dict")
 		return {}
 

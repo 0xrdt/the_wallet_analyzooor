@@ -91,37 +91,4 @@ def get_data_safe(sql_query: str):
 
 
 if __name__ == "__main__":
-	import pandas as pd
-	import queries
-	import flipside
-	def load_transactions(wallet_address: str, start_date: str, rows_limit: int = 100_000, chain_name='ethereum'):
-		query_template = queries.transactions_per_wallet
-		query = query_template.\
-			replace("$CHAIN_NAME", chain_name).\
-			replace("$START_DATE", start_date).\
-			replace("$WALLET_ADDRESS", wallet_address.lower())
-		data = flipside.get_data_safe(query + f" LIMIT {rows_limit}")
-
-		if data:
-			transactions_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
-			transactions_per_wallet = transactions_per_wallet.drop_duplicates('TX_HASH')
-
-			transactions_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(transactions_per_wallet['BLOCK_TIMESTAMP'])
-			cols = ['ADDRESS_NAME','LABEL_TYPE','LABEL_SUBTYPE','LABEL']
-			for col in cols:
-				transactions_per_wallet[col] = transactions_per_wallet[col].fillna('other')
-
-			return transactions_per_wallet
-
-		else: 
-			return pd.DataFrame(columns=['BLOCK_NUMBER', 'BLOCK_TIMESTAMP', 'BLOCK_HASH', 'TX_HASH', 'NONCE',
-		'POSITION', 'ORIGIN_FUNCTION_SIGNATURE', 'FROM_ADDRESS', 'TO_ADDRESS',
-		'ETH_VALUE', 'TX_FEE', 'GAS_PRICE', 'GAS_LIMIT', 'GAS_USED',
-		'CUMULATIVE_GAS_USED', 'INPUT_DATA', 'STATUS', 'TX_JSON', 'BLOCKCHAIN',
-		'CREATOR', 'ADDRESS', 'ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE',
-		'LABEL', 'SIDE'])
-
-
-	start_date = '2022-02-01'
-	wallet_address = '0xAfB5853Ba41eE4d8886eD66793535218bEc8F1A9'
-	tmp_df = load_transactions(wallet_address, start_date, chain_name='arbitrum')
+	pass

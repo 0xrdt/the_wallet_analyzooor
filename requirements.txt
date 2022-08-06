@@ -1,6 +1,6 @@
 wheel
-streamlit
+streamlit >= 1.9.2
 streamlit-aggrid
 plotly
 # statsmodels
-# shroomdk
+shroomdk

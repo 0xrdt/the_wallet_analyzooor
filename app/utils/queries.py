@@ -323,3 +323,67 @@ SELECT
 FROM $CHAIN_NAME.core.dim_labels
 WHERE ADDRESS='$WALLET_ADDRESS'
 """
+
+nft_sales_template = \
+"""
+SELECT 
+  	block_timestamp,
+	tx_hash,
+  	event_type,
+  	nft_address,
+  	project_name,
+  	SELLER_ADDRESS,
+  	BUYER_ADDRESS,
+  	tokenid,
+  	platform_name,
+  	PRICE_USD,
+  	PRICE,
+  	'incoming' as side
+FROM ethereum.core.ez_nft_sales
+WHERE (block_timestamp>='$START_DATE') AND (buyer_address=lower('$WALLET_ADDRESS'))
+UNION ALL
+SELECT 
+  	block_timestamp,
+	tx_hash,
+  	event_type,
+  	nft_address,
+  	project_name,
+  	SELLER_ADDRESS,
+  	BUYER_ADDRESS,
+  	tokenid,
+  	platform_name,
+  	PRICE_USD,
+  	PRICE,
+  	'outgoing' as side
+FROM ethereum.core.ez_nft_sales
+WHERE (block_timestamp>='$START_DATE') AND (seller_address=lower('$WALLET_ADDRESS'))
+"""
+
+nft_transfers_template = \
+"""
+SELECT 
+  	block_timestamp,
+	tx_hash,
+  	event_type,
+  	nft_address,
+  	project_name,
+  	nft_from_address,
+  	nft_to_address,
+  	tokenid,
+  	'incoming' as side
+FROM ethereum.core.ez_nft_transfers
+WHERE (block_timestamp>='$START_DATE') AND (nft_to_address=lower('$WALLET_ADDRESS'))
+UNION ALL
+SELECT 
+  	block_timestamp,
+	tx_hash,
+  	event_type,
+  	nft_address,
+  	project_name,
+  	nft_from_address,
+  	nft_to_address,
+  	tokenid,
+	'outgoing' as side
+FROM ethereum.core.ez_nft_transfers
+  WHERE (block_timestamp>='$START_DATE') AND (nft_from_address=lower('$WALLET_ADDRESS'))
+"""

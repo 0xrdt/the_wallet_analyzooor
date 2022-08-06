@@ -21,26 +21,40 @@ st.set_page_config(
 
 st.title('The Wallet Analyzoooooor')
 
-st.markdown("Fetching the data may take some time. Please be patient. (it usually takes less than 1 minute)")
+st.info("Fetching the data may take some time. Please be patient. (it usually takes less than 1 minute)")
 
 #st.sidebar.title('Choose what you want to see')
 selected_sections = st.multiselect('Choose the sections you want to see:', 
 										   [
 												'Transactions',
 												'Historical Balance',
-												'Transfers'
+												'Transfers',
+												'Transactions on Other EVM Chains',
+												'NFTs!'
 											], 
-										   default=['Historical Balance'])
+										   default=[])
 
 start_date = st.date_input(label='Start date', value=datetime.date(2022, 6, 1)).strftime('%Y-%m-%d')
 wallet_address = st.text_input(label='Wallet address', value='0x41318419cfa25396b47a94896ffa2c77c6434040')
 rows_limit = st.number_input(label='Rows limit (useful if the app is crashing, but will break some charts)', 
 								value=100_000, min_value=1, max_value=100_000)
 
+st.markdown("""
+Some wallet ideas:
+- 0x41318419cfa25396b47a94896ffa2c77c6434040: celsius (good for transfers and transactions)
+- 0x5DD596C901987A2b28C38A9C1DfBf86fFFc15d77: sifu (good for crosschain)
+- 0x581BEf12967f06f2eBfcabb7504fA61f0326CD9A: danner.eth (good for nfts)
+""")
+
 st.markdown("Wallet label:")
 wallet_label = load_wallet_label(wallet_address).copy()
-wallet_label = wallet_label[['ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE', 'LABEL']]
-st.write(wallet_label)
+
+if len(wallet_label) == 0:
+	st.write("No label found")
+
+else:
+	wallet_label = wallet_label[['ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE', 'LABEL']]
+	st.write(wallet_label)
 
 if 'Transactions' in selected_sections:
 
@@ -48,7 +62,7 @@ if 'Transactions' in selected_sections:
 	
 	transactions_per_wallet = load_transactions(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 	if len(transactions_per_wallet)==0:
-		st.markdown("No transactions found.")
+		st.warning("No transactions found.")
 	else:
 		transactions_per_wallet['dummy']=10
 		fig = px.scatter(transactions_per_wallet, x="BLOCK_TIMESTAMP", y="LABEL", color="SIDE", size='dummy', size_max=10, opacity=0.5,
@@ -104,7 +118,7 @@ if 'Historical Balance' in selected_sections:
 	erc20_balances_per_wallet = load_erc20_balances(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 
 	if len(erc20_balances_per_wallet)==0:
-		st.markdown("No ERC20 balances found.")
+		st.warning("No ERC20 balances found.")
 	
 	else:
 		fig = px.bar(erc20_balances_per_wallet, x='BALANCE_DATE', y='AMOUNT_USD', color='SYMBOL')
@@ -142,7 +156,7 @@ if 'Transfers' in selected_sections:
 	token_transfers_per_wallet = load_erc20_token_transfers(start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit).copy()
 
 	if (len(native_token_transfers_per_wallet)==0) or (len(token_transfers_per_wallet)==0):
-		st.markdown("No transfers found. (right now the account needs to have both ERC20 and ETH transfers, I'll fix it later")
+		st.warning("No transfers found. (right now the account needs to have both ERC20 and ETH transfers, I'll fix it later")
 	else:
 		agg_native_token_transfers_per_wallet = native_token_transfers_per_wallet.groupby(["LABEL", "SIDE"])[['AMOUNT_USD', 'AMOUNT']].sum()
 		agg_native_token_transfers_per_wallet = agg_native_token_transfers_per_wallet.reset_index()
@@ -196,3 +210,108 @@ if 'Transfers' in selected_sections:
 			df_grid_builder(df)
 
 
+if 'Transactions on Other EVM Chains' in selected_sections:
+	
+	st.markdown('## Transactions on Other EVM Chains')
+
+	st.warning("Cross chain data is not available before June 2022")
+
+	list_of_dfs = []
+
+	other_chains = ['arbitrum', 'optimism', 'avalanche', 'bsc', 'polygon']
+	for chain in other_chains:
+		print(chain)
+		tmp_df = load_transactions(wallet_address.lower(), start_date, rows_limit=rows_limit, chain_name=chain).copy()
+		tmp_df['chain'] = chain
+		list_of_dfs.append(tmp_df)
+
+	transactions_per_wallet_other_chains = pd.concat(list_of_dfs)
+
+	if len(transactions_per_wallet_other_chains)==0:
+		st.warning("No cross chain transfers found.")
+	else:
+		found_chains = list(transactions_per_wallet_other_chains['chain'].unique())
+		st.write(f"Chains found: {found_chains}")
+
+		should_show_cross_chain_scatter_plot = st.checkbox("Show cross chain scatter plot")
+		if should_show_cross_chain_scatter_plot:
+			transactions_per_wallet_other_chains['dummy'] = 10
+			fig = px.scatter(transactions_per_wallet_other_chains, x="BLOCK_TIMESTAMP", y="LABEL", color="SIDE", size='dummy', size_max=10, opacity=0.5,
+					title='Labeled Transactions over time', hover_data=['TX_FEE', 'TX_HASH', 'ETH_VALUE'], facet_row='chain')
+			# fig.update_layout(xaxis_rangeslider_visible=True)
+			fig.update_layout(height=500*transactions_per_wallet_other_chains['chain'].nunique())
+			st.write(fig)
+		
+		should_show_cross_chain_raw_data = st.checkbox("Show cross chain raw data")
+		if should_show_cross_chain_raw_data:
+			cols = [
+			'chain', 'TX_HASH', 'SIDE', 'BLOCK_TIMESTAMP', 'FROM_ADDRESS', 'TO_ADDRESS', 'ETH_VALUE', 'TX_FEE', 
+			'ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE',
+			'LABEL'
+			]
+			df = transactions_per_wallet_other_chains[cols].sort_values(by='BLOCK_TIMESTAMP')
+			df_grid_builder(df)
+
+if 'NFTs!' in selected_sections:
+
+	st.markdown("## NFTs!")
+
+	nft_sales_df = load_nft_sales(wallet_address.lower(), start_date, rows_limit=rows_limit).copy()
+	nft_transfers_df = load_nft_transfers(wallet_address.lower(), start_date, rows_limit=rows_limit).copy()
+
+	should_show_nft_scatter_plot = st.checkbox('Show nfts scatter plots')
+	if should_show_nft_scatter_plot:
+		if len(nft_sales_df) > 0:
+			nft_sales_df['dummy'] = 10
+
+			fig = px.scatter(nft_sales_df, x='BLOCK_TIMESTAMP', y='PROJECT_NAME', color='SIDE', size='dummy', size_max=10, opacity=0.5,
+						title='NFT sales/buys by project', hover_data=['PLATFORM_NAME', 'PRICE_USD', 'PRICE', 'TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'])
+			fig.update_layout(height=500)
+			st.write(fig)
+
+			fig = px.scatter(nft_sales_df, x='BLOCK_TIMESTAMP', y='PRICE_USD', facet_row='SIDE', color='PROJECT_NAME',size='dummy', size_max=10, opacity=0.5,
+									title='NFT sales/buys by USD Price', hover_data=['PLATFORM_NAME', 'PRICE_USD', 'PRICE', 'TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'], marginal_y='box')
+			fig.update_layout(height=500)
+			st.write(fig)
+
+			nft_sales_df_agg = nft_sales_df.groupby(['PROJECT_NAME', 'SIDE']).sum()['PRICE_USD'].reset_index()
+			nft_sales_df_agg.columns = ['PROJECT_NAME', 'SIDE', 'VOLUME_USD']
+			fig = px.sunburst(nft_sales_df_agg, path=['SIDE', 'PROJECT_NAME'], values='VOLUME_USD', title='Aggregate NFT sales volume', color='PROJECT_NAME')
+			fig.update_layout(height=700)
+			st.write(fig)
+
+			nft_sales_df_by_platform = nft_sales_df.groupby(['PLATFORM_NAME']).agg({"PRICE_USD": "sum", "PRICE": "sum", "TX_HASH": "count"}).reset_index()
+			nft_sales_df_by_platform.columns = ['PLATFORM_NAME', 'VOLUME_USD', 'VOLUME', 'COUNT']
+			fig = px.bar(nft_sales_df_by_platform, x='PLATFORM_NAME', y='COUNT', title='Most used NFT platforms', hover_data=['COUNT', 'VOLUME_USD', 'VOLUME'])
+			st.write(fig)
+		else:
+			st.warning("No NFT sales found")
+		
+		if len(nft_transfers_df) > 0:
+			nft_transfers_df['dummy'] = 10
+			fig = px.scatter(nft_transfers_df, x='BLOCK_TIMESTAMP', y='PROJECT_NAME', color='SIDE', size='dummy', size_max=10, opacity=0.5,
+						title='NFT transfers and mints by project', hover_data=['TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'])
+			fig.update_layout(height=500)
+			st.write(fig)
+
+			fig = px.scatter(nft_transfers_df, x='BLOCK_TIMESTAMP', y='PROJECT_NAME', color='EVENT_TYPE', facet_row='SIDE',size='dummy', size_max=10, opacity=0.5,
+						title='NFT transfers and mints by project (detailed by event type)', hover_data=['TOKENID', 'PROJECT_NAME', 'EVENT_TYPE'])
+			fig.update_layout(height=500)		
+			st.write(fig)
+		else:
+			st.warning("No NFT transfers found")
+
+		if len(nft_sales_df) > 0 and len(nft_transfers_df) > 0:
+			agg_nfts_df = pd.concat([nft_sales_df[['BLOCK_TIMESTAMP', 'SIDE', 'PROJECT_NAME']], nft_transfers_df[['BLOCK_TIMESTAMP', 'SIDE', 'PROJECT_NAME']]], ignore_index=True)
+			agg_agg_nfts = agg_nfts_df.groupby(['SIDE', 'PROJECT_NAME']).count().reset_index()
+			agg_agg_nfts.columns = ['SIDE', 'PROJECT_NAME', 'COUNT']
+			fig = px.sunburst(agg_agg_nfts, path=['SIDE', 'PROJECT_NAME'], values='COUNT', title='Aggregate count of NFT movements (sales, mints, transfers)', color='PROJECT_NAME')
+			fig.update_layout(height=700)
+			st.write(fig)
+
+	should_show_raw_nft_data = st.checkbox('Show nfts raw data')
+	if should_show_raw_nft_data:
+		st.write('NFTs sales:')
+		df_grid_builder(nft_sales_df)
+		st.write('NFTs transfers:')
+		df_grid_builder(nft_transfers_df)

@@ -3,4 +3,4 @@ streamlit
 streamlit-aggrid
 plotly
 # statsmodels
-shroomdk
+# shroomdk

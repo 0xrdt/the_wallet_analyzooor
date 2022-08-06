@@ -229,51 +229,51 @@ token_transfers_per_wallet = \
 """
 SELECT 
   *,
-  'outgoing' as side
+  'incoming' as side
 FROM $CHAIN_NAME.core.ez_token_transfers transfers
-LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transfers.ORIGIN_TO_ADDRESS=labels.address
-WHERE ORIGIN_FROM_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
+LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transfers.FROM_ADDRESS=labels.address
+WHERE TO_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
 UNION ALL
 SELECT 
   *,
-  'incoming' as side
+  'outgoing' as side
 FROM $CHAIN_NAME.core.ez_token_transfers transfers
-LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transfers.ORIGIN_FROM_ADDRESS=labels.address
-WHERE ORIGIN_TO_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
+LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transfers.TO_ADDRESS=labels.address
+WHERE FROM_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
 """
 
 native_token_transfers_per_wallet = \
 """
 SELECT 
   *,
-  'outgoing' as side 
+  'incoming' as side 
 FROM $CHAIN_NAME.core.ez_$TOKEN_NAME_transfers transfers
-LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transfers.ORIGIN_TO_ADDRESS=labels.address
-WHERE ORIGIN_FROM_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
+LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transfers.eth_FROM_ADDRESS=labels.address
+WHERE eth_TO_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
 UNION ALL
 SELECT 
   *,
-  'incoming' as side 
+  'outgoing' as side 
 FROM $CHAIN_NAME.core.ez_$TOKEN_NAME_transfers transfers
-LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transfers.ORIGIN_FROM_ADDRESS=labels.address
-WHERE ORIGIN_TO_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
+LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transfers.eth_TO_ADDRESS=labels.address
+WHERE eth_FROM_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
 """
 
 transactions_per_wallet = \
 """
 SELECT 
   *,
-  'outgoing' as side
-FROM $CHAIN_NAME.core.fact_transactions transactions
-LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transactions.to_address=labels.address
-WHERE FROM_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
-UNION ALL
-SELECT 
-  *,
   'incoming' as side
 FROM $CHAIN_NAME.core.fact_transactions transactions
 LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transactions.from_address=labels.address
 WHERE TO_ADDRESS = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
+UNION ALL
+SELECT 
+  *,
+  'outgoing' as side
+FROM $CHAIN_NAME.core.fact_transactions transactions
+LEFT JOIN $CHAIN_NAME.core.dim_labels labels ON transactions.TO_ADDRESS=labels.address
+WHERE from_address = '$WALLET_ADDRESS' AND block_timestamp>='$START_DATE'
 """
 
 # START_DATE, CHAIN_NAME

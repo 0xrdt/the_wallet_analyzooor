@@ -1,19 +1,25 @@
+from pyexpat import native_encoding
 import pandas as pd
-import streamlit as st
-import utils.flipside as flipside
 import utils.queries as queries
+import shroomdk
+import os
+import concurrent.futures
 
-@st.cache
+# get env variable API_KEY
+API_KEY = os.environ.get('FLIPSIDE_API_KEY', None)
+
 def load_transactions(wallet_address: str, start_date: str, rows_limit: int = 100_000, chain_name='ethereum'):
 	query_template = queries.transactions_per_wallet
 	query = query_template.\
 		replace("$CHAIN_NAME", chain_name).\
 		replace("$START_DATE", start_date).\
 		replace("$WALLET_ADDRESS", wallet_address.lower())
-	data = flipside.get_data_safe(query + f" LIMIT {rows_limit}")
 
-	if data:
-		transactions_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
+	sdk = shroomdk.ShroomDK(API_KEY)
+	query_result_set = sdk.query(query + f" LIMIT {rows_limit}")
+
+	if query_result_set.rows:
+		transactions_per_wallet = pd.DataFrame(query_result_set.rows, columns=query_result_set.columns)
 		transactions_per_wallet = transactions_per_wallet.drop_duplicates('TX_HASH')
 		transactions_per_wallet.rename(columns={'PROJECT_NAME': 'LABEL'}, inplace=True)
 		transactions_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(transactions_per_wallet['BLOCK_TIMESTAMP'])
@@ -33,17 +39,18 @@ def load_transactions(wallet_address: str, start_date: str, rows_limit: int = 10
 
 
 
-@st.cache
 def load_erc20_balances(wallet_address: str, start_date: str, rows_limit: int = 100_000):
 	chain_name = 'ethereum'
 	query_template = queries.erc20_balances_per_address
 	query = query_template.\
 		replace("$START_DATE", start_date).\
 		replace("$WALLET_ADDRESS", wallet_address.lower())
-	data = flipside.get_data_safe(query + f" LIMIT {rows_limit}")
+	
+	sdk = shroomdk.ShroomDK(API_KEY)
+	query_result_set = sdk.query(query + f" LIMIT {rows_limit}")
 
-	if data:
-		erc20_balances_per_address = pd.DataFrame(data['results'], columns=data['columnLabels'])
+	if query_result_set:
+		erc20_balances_per_address = pd.DataFrame(query_result_set.rows, columns=query_result_set.columns)
 		erc20_balances_per_address = erc20_balances_per_address.drop_duplicates()
 		erc20_balances_per_address.rename(columns={'PROJECT_NAME': 'LABEL'}, inplace=True)
 		erc20_balances_per_address = erc20_balances_per_address.dropna(subset=["AMOUNT_USD"])
@@ -58,7 +65,7 @@ def load_erc20_balances(wallet_address: str, start_date: str, rows_limit: int = 
        'HAS_PRICE', 'HAS_DECIMAL'])
 
 
-@st.cache
+
 def load_native_token_transfers(wallet_address: str, start_date: str, rows_limit: int = 100_000):
 	chain_name = 'ethereum'
 	query_template = queries.native_token_transfers_per_wallet
@@ -67,10 +74,12 @@ def load_native_token_transfers(wallet_address: str, start_date: str, rows_limit
 		replace("$START_DATE", start_date).\
 		replace("$WALLET_ADDRESS", wallet_address.lower()).\
 		replace("$TOKEN_NAME", "ETH")
-	data = flipside.get_data_safe(query + f" LIMIT {rows_limit}")
+	
+	sdk = shroomdk.ShroomDK(API_KEY)
+	query_result_set = sdk.query(query + f" LIMIT {rows_limit}")
 
-	if data:
-		native_token_transfers_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
+	if query_result_set:
+		native_token_transfers_per_wallet = pd.DataFrame(query_result_set.rows, columns=query_result_set.columns)
 		native_token_transfers_per_wallet = native_token_transfers_per_wallet.drop_duplicates(subset='TX_HASH')
 		native_token_transfers_per_wallet.rename(columns={'PROJECT_NAME': 'LABEL'}, inplace=True)
 		native_token_transfers_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(native_token_transfers_per_wallet['BLOCK_TIMESTAMP'])
@@ -88,7 +97,7 @@ def load_native_token_transfers(wallet_address: str, start_date: str, rows_limit
        'LABEL_SUBTYPE', 'LABEL', 'SIDE'])
 
 
-@st.cache
+
 def load_erc20_token_transfers(wallet_address: str, start_date: str, rows_limit: int = 100_000):
 	chain_name = 'ethereum'
 	query_template = queries.token_transfers_per_wallet
@@ -96,10 +105,12 @@ def load_erc20_token_transfers(wallet_address: str, start_date: str, rows_limit:
 		replace("$CHAIN_NAME", chain_name).\
 		replace("$START_DATE", start_date).\
 		replace("$WALLET_ADDRESS", wallet_address.lower())
-	data = flipside.get_data_safe(query + f" LIMIT {rows_limit}")
+	
+	sdk = shroomdk.ShroomDK(API_KEY)
+	query_result_set = sdk.query(query + f" LIMIT {rows_limit}")
 
-	if data:
-		erc20_token_transfers_per_wallet = pd.DataFrame(data['results'], columns=data['columnLabels'])
+	if query_result_set:
+		erc20_token_transfers_per_wallet = pd.DataFrame(query_result_set.rows, columns=query_result_set.columns)
 		erc20_token_transfers_per_wallet = erc20_token_transfers_per_wallet.drop_duplicates(subset='TX_HASH')
 		erc20_token_transfers_per_wallet.rename(columns={'PROJECT_NAME': 'LABEL'}, inplace=True)
 		erc20_token_transfers_per_wallet['BLOCK_TIMESTAMP'] = pd.to_datetime(erc20_token_transfers_per_wallet['BLOCK_TIMESTAMP'])
@@ -119,7 +130,7 @@ def load_erc20_token_transfers(wallet_address: str, start_date: str, rows_limit:
        'ADDRESS_NAME', 'LABEL_TYPE', 'LABEL_SUBTYPE', 'LABEL', 'SIDE'])
 
 
-@st.cache
+
 def load_wallet_label(wallet_address: str, rows_limit: int = 100_000):
 	chain_name = 'ethereum'
 	query_template = queries.wallet_label
@@ -127,10 +138,12 @@ def load_wallet_label(wallet_address: str, rows_limit: int = 100_000):
 		replace("$CHAIN_NAME", chain_name).\
 		replace("$WALLET_ADDRESS", wallet_address.lower())
 	
-	data = flipside.get_data_safe(query + f" LIMIT {rows_limit}")
-	if data:
+	sdk = shroomdk.ShroomDK(API_KEY)
+	query_result_set = sdk.query(query + f" LIMIT {rows_limit}")
 
-		wallet_label = pd.DataFrame(data['results'], columns=data['columnLabels'])
+	if query_result_set:
+
+		wallet_label = pd.DataFrame(query_result_set.rows, columns=query_result_set.columns)
 		wallet_label = wallet_label.drop_duplicates()
 		wallet_label.rename(columns={'PROJECT_NAME': 'LABEL'}, inplace=True)
 		return wallet_label
@@ -138,17 +151,20 @@ def load_wallet_label(wallet_address: str, rows_limit: int = 100_000):
 		return pd.DataFrame(columns=['BLOCKCHAIN', 'CREATOR', 'ADDRESS', 'ADDRESS_NAME', 'LABEL_TYPE',
        'LABEL_SUBTYPE', 'LABEL'])
 
-@st.cache
+
+
 def load_nft_sales(wallet_address: str, start_date: str, rows_limit: int = 100_000):
 	sales_template = queries.nft_sales_template
 	sales_query = sales_template.\
 		replace("$START_DATE", start_date).\
 		replace("$WALLET_ADDRESS", wallet_address.lower()) 
-	data = flipside.get_data_safe(sales_query)
 
-	if data:
+	sdk = shroomdk.ShroomDK(API_KEY)
+	query_result_set = sdk.query(sales_query + f" LIMIT {rows_limit}")
 
-		sales_df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+	if query_result_set:
+
+		sales_df = pd.DataFrame(query_result_set.rows, columns=query_result_set.columns)
 		sales_df['BLOCK_TIMESTAMP'] = pd.to_datetime(sales_df['BLOCK_TIMESTAMP'])
 		sales_df['PROJECT_NAME'] = sales_df['PROJECT_NAME'].fillna('other')
 		return sales_df
@@ -158,15 +174,20 @@ def load_nft_sales(wallet_address: str, start_date: str, rows_limit: int = 100_0
 					'PROJECT_NAME', 'SELLER_ADDRESS', 'BUYER_ADDRESS', 'TOKENID',
 					'PLATFORM_NAME', 'PRICE_USD', 'PRICE', 'SIDE'])
 
-@st.cache
+
+
 def load_nft_transfers(wallet_address: str, start_date: str, rows_limit: int = 100_000):
 	transfers_template = queries.nft_transfers_template
 	transfers_query = transfers_template.\
 		replace("$START_DATE", start_date).\
 		replace("$WALLET_ADDRESS", wallet_address.lower()) 
-	data = flipside.get_data_safe(transfers_query)
-	if data:
-		transfers_df = pd.DataFrame(data['results'], columns=data['columnLabels'])
+	
+	sdk = shroomdk.ShroomDK(API_KEY)
+	query_result_set = sdk.query(transfers_query + f" LIMIT {rows_limit}")
+
+
+	if query_result_set:
+		transfers_df = pd.DataFrame(query_result_set.rows, columns=query_result_set.columns)
 		transfers_df['BLOCK_TIMESTAMP'] = pd.to_datetime(transfers_df['BLOCK_TIMESTAMP'])
 		transfers_df['PROJECT_NAME'] = transfers_df['PROJECT_NAME'].fillna('other')
 		return transfers_df
@@ -175,3 +196,24 @@ def load_nft_transfers(wallet_address: str, start_date: str, rows_limit: int = 1
 		return pd.DataFrame(columns=['BLOCK_TIMESTAMP', 'TX_HASH', 'EVENT_TYPE', 'NFT_ADDRESS',
        								'PROJECT_NAME', 'NFT_FROM_ADDRESS', 'NFT_TO_ADDRESS', 
 									'TOKENID', 'SIDE'])
+
+
+def load_df_bundle(wallet_address: str, start_date: str, rows_limit: int = 100_000):
+	
+	# use thread pool to speed up the loading of the dataframes
+	with concurrent.futures.ThreadPoolExecutor() as executor:
+		future_transactions = executor.submit(load_transactions, start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit)
+		future_erc20_balances = executor.submit(load_erc20_balances, start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit)
+		future_native_token_transfers = executor.submit(load_native_token_transfers, start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit)
+		future_token_transfers = executor.submit(load_erc20_token_transfers, start_date=start_date, wallet_address=wallet_address, rows_limit=rows_limit)
+		future_nft_sales = executor.submit(load_nft_sales, wallet_address.lower(), start_date, rows_limit=rows_limit)
+		future_nft_transfers = executor.submit(load_nft_transfers, wallet_address.lower(), start_date, rows_limit=rows_limit)
+
+	transactions_per_wallet = future_transactions.result()
+	erc20_balances_per_wallet = future_erc20_balances.result()
+	native_token_transfers_per_wallet = future_native_token_transfers.result()
+	token_transfers_per_wallet = future_token_transfers.result()
+	nft_sales_df = future_nft_sales.result()
+	nft_transfers_df = future_nft_transfers.result()
+
+	return transactions_per_wallet, erc20_balances_per_wallet, native_token_transfers_per_wallet, token_transfers_per_wallet, nft_sales_df, nft_transfers_df

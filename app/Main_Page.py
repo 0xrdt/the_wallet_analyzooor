@@ -67,7 +67,7 @@ if (('Transactions' in selected_sections) or ('Historical Balance' in selected_s
 	transactions_per_wallet, erc20_balances_per_wallet, native_token_transfers_per_wallet, \
 	token_transfers_per_wallet, nft_sales_df, nft_transfers_df = transactions_per_wallet.copy(), \
 	erc20_balances_per_wallet.copy(), native_token_transfers_per_wallet.copy(), \
-	token_transfers_per_wallet.copy(), nft_sales_df, nft_transfers_df.copy()
+	token_transfers_per_wallet.copy(), nft_sales_df.copy(), nft_transfers_df.copy()
 
 if 'Transactions' in selected_sections:
 
@@ -97,28 +97,17 @@ if 'Transactions' in selected_sections:
 			agg_transactions_per_wallet = transactions_per_wallet\
 											.set_index('BLOCK_TIMESTAMP')\
 											.groupby(['SIDE', 'LABEL', pd.Grouper(freq='1d')])['TX_HASH']\
-											.count()
-			tmp = agg_transactions_per_wallet.reset_index()
-			tmp = tmp[tmp['SIDE']=='incoming']
-			fig = px.bar(tmp, x="BLOCK_TIMESTAMP", y="TX_HASH", facet_row="SIDE", color='LABEL',
-					title='Aggregated Labeled Incoming Transactions over time')
-			fig.update_yaxes(title='Number of Transactions')
-			fig.update_xaxes(title='Date')
-			fig.update_layout(height=700)
+											.count().fillna(0)
+
+
+			fig = px.bar(agg_transactions_per_wallet.reset_index(), x="BLOCK_TIMESTAMP", y="TX_HASH", facet_row="SIDE", color='LABEL',
+					title='Aggregated Labeled Incoming Transactions over time', facet_row_spacing=0.15,)
+			fig.update_yaxes(title='Number of Transactions', matches=None)
+			fig.update_xaxes(showticklabels=True, title='Date')
+
+			fig.update_layout(height=800)
 			st.plotly_chart(fig, use_container_width=True)
 
-			agg_transactions_per_wallet = transactions_per_wallet\
-										.set_index('BLOCK_TIMESTAMP')\
-										.groupby(['SIDE', 'LABEL', pd.Grouper(freq='1d')])['TX_HASH']\
-										.count()
-			tmp = agg_transactions_per_wallet.reset_index()
-			tmp = tmp[tmp['SIDE']=='outgoing']
-			fig = px.bar(tmp, x="BLOCK_TIMESTAMP", y="TX_HASH", facet_row="SIDE", color='LABEL',
-					title='Aggregated Labeled Outgoing Transactions over time')
-			fig.update_yaxes(title='Number of Transactions')
-			fig.update_xaxes(title='Date')
-			fig.update_layout(height=700)
-			st.plotly_chart(fig, use_container_width=True)
 
 		should_show_raw_data = st.checkbox("Show transactions raw data")
 		if should_show_raw_data:
